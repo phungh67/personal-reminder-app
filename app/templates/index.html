@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} - Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        body { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="w-full p-6 border-b border-slate-700 bg-slate-800/50 backdrop-blur">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <span class="text-xl font-bold text-emerald-400">~/home</span>
+            <div class="space-x-4">
+                <a href="#" class="hover:text-emerald-400 transition">/projects</a>
+                <a href="#" class="hover:text-emerald-400 transition">/contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-4xl mx-auto w-full p-6 mt-10">
+        
+        <!-- Foreword / Hero -->
+        <section class="mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Hello, World.</h1>
+            <div class="p-6 bg-slate-800 rounded-lg border-l-4 border-emerald-500 shadow-lg">
+                <p class="text-lg leading-relaxed text-slate-300">
+                    {{ foreword }}
+                </p>
+            </div>
+        </section>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            
+            <!-- Git Repos -->
+            <section>
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <span class="text-emerald-400 mr-2">></span> Git Repositories
+                </h2>
+                <div class="space-y-4">
+                    {% for repo in repos %}
+                    <a href="{{ repo.url }}" class="block group">
+                        <div class="p-4 bg-slate-800 rounded border border-slate-700 hover:border-emerald-500 transition duration-300">
+                            <h3 class="font-bold text-emerald-300 group-hover:underline">{{ repo.name }}</h3>
+                            <p class="text-sm text-slate-400 mt-1">{{ repo.desc }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Education / Background -->
+            <section>
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <span class="text-purple-400 mr-2">></span> Education
+                </h2>
+                <div class="space-y-4">
+                    {% for edu in education %}
+                    <div class="p-4 bg-slate-800/50 rounded border border-dashed border-slate-600">
+                        <h3 class="font-semibold text-white">{{ edu.degree }}</h3>
+                        <span class="inline-block mt-2 text-xs px-2 py-1 rounded bg-slate-700 text-slate-300">
+                            {{ edu.status }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full p-6 text-center text-slate-600 text-sm mt-10">
+        <p>&copy; 2025 DevOps Portfolio. Built with Flask.</p>
+    </footer>
+
+</body>
+</html>
