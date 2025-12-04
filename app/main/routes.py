@@ -1,30 +1,37 @@
 from flask import Blueprint, render_template
+import json
 
 main = Blueprint('main', __name__)
 
+def get_profile_context(filepath='data.json'):
+    """
+    Reads the JSON file and returns a dictionary formatted 
+    specifically for the Jinja2 template in index.html.
+    """
+    try:
+        with open(filepath, 'r') as file:
+            data = json.load(file)
+
+        context = {
+            "name": data.get('name', 'DevOps Engineer'),
+            "foreword": data.get('foreword', ''),
+            "education": data.get('education', []),
+            "repos": data.get('repos', [])
+        }
+        
+        return context
+
+    except FileNotFoundError:
+        print(f"Error: The file '{filepath}' was not found.")
+        return {}
+    except json.JSONDecodeError:
+        print(f"Error: Failed to decode JSON from '{filepath}'.")
+        return {}
+
 @main.route('/')
 def index():
-    profile_data = {
-        "name": "DevOps Engineer",
-        "foreword": (
-            "I am a DevOps engineer with 3 years of experience, holding a Bachelor's degree "
-            "in Electronic and Telecommunication. I am currently pursuing a Master's degree "
-            "on Computer Systems and Cybersecurity."
-        ),
-        "education": [
-            {
-                "degree": "Master's in Computer Systems and Cybersecurity",
-                "status": "In Progress"
-            },
-            {
-                "degree": "Bachelor's in Electronic and Telecommunication",
-                "status": "Completed"
-            }
-        ],
-        "repos": [
-            {"name": "infrastructure-as-code-lab", "url": "#", "desc": "Terraform and Ansible playground"},
-            {"name": "ci-cd-pipelines", "url": "#", "desc": "Jenkins and GitHub Actions workflows"},
-            {"name": "flask-blueprint-portfolio", "url": "#", "desc": "Source code for this website"}
-        ]
-    }   
-    return render_template('index.html', **profile_data)
+    input_file = "data.json"
+    with open(input_file, encoding="utf-8") as json_file:
+        extracted_data = get_profile_context(input_file)
+ 
+    return render_template('index.html', **extracted_data)
