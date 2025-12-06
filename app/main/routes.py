@@ -35,6 +35,6 @@ def get_profile_context(filepath='data.json'):
 
 @main.route('/')
 def index():
-    content = get_profile_context()
+    content = get_profile_context('app/main/data.json')
  
     return render_template('index.html', **content)
