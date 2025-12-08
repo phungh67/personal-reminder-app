@@ -8,23 +8,27 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
         body { font-family: 'JetBrains Mono', monospace; }
+        /* Custom scrollbar for textarea */
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #1e293b; }
+        textarea::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-300 min-h-screen flex flex-col">
 
     <!-- Navbar -->
-    <nav class="w-full p-6 border-b border-slate-700 bg-slate-800/50 backdrop-blur">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
+    <nav class="w-full p-6 border-b border-slate-700 bg-slate-800/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
             <span class="text-xl font-bold text-emerald-400">~/home</span>
             <div class="space-x-4">
-                <a href="#" class="hover:text-emerald-400 transition">/projects</a>
-                <a href="#" class="hover:text-emerald-400 transition">/contact</a>
+                <a href="#projects" class="hover:text-emerald-400 transition">/projects</a>
+                <a href="#scheduler" class="hover:text-emerald-400 transition">/scheduler</a>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow max-w-4xl mx-auto w-full p-6 mt-10">
+    <main class="flex-grow max-w-5xl mx-auto w-full p-6 mt-6">
         
         <!-- Foreword / Hero -->
         <section class="mb-12">
@@ -36,7 +40,8 @@
             </div>
         </section>
 
-        <div class="grid md:grid-cols-2 gap-8">
+        <!-- Main Grid -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12" id="projects">
             
             <!-- Git Repos -->
             <section>
@@ -45,7 +50,7 @@
                 </h2>
                 <div class="space-y-4">
                     {% for repo in repos %}
-                    <a href="{{ repo.url }}" class="block group">
+                    <a href="{{ repo.url }}" target="_blank" class="block group">
                         <div class="p-4 bg-slate-800 rounded border border-slate-700 hover:border-emerald-500 transition duration-300">
                             <h3 class="font-bold text-emerald-300 group-hover:underline">{{ repo.name }}</h3>
                             <p class="text-sm text-slate-400 mt-1">{{ repo.desc }}</p>
@@ -55,7 +60,7 @@
                 </div>
             </section>
 
-            <!-- Education / Background -->
+            <!-- Education -->
             <section>
                 <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
                     <span class="text-purple-400 mr-2">></span> Education
@@ -73,12 +78,119 @@
             </section>
         </div>
 
+        <!-- NEW: Scheduler / Note Interface -->
+        <section id="scheduler" class="border-t border-slate-700 pt-10">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                <span class="text-yellow-400 mr-2">></span> Schedule Note (Markdown)
+            </h2>
+            
+            <div class="bg-slate-800 p-6 rounded-lg border border-slate-700 shadow-xl">
+                <form id="schedulerForm" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Recipient -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1">Recipient Email</label>
+                            <input type="email" id="recipient" required 
+                                class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 focus:outline-none transition"
+                                placeholder="friend@example.com">
+                        </div>
+                        <!-- Date Time -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1">Trigger Time</label>
+                            <input type="datetime-local" id="triggerTime" required
+                                class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-emerald-500 focus:outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1">Content (Markdown Supported)</label>
+                        <textarea id="content" rows="4" required
+                            class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white font-mono focus:border-emerald-500 focus:outline-none transition"
+                            placeholder="# Hello&#10;Don't forget to check the server logs!"></textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-center justify-between mt-4">
+                        <button type="submit" 
+                            class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-6 rounded transition duration-200 flex items-center">
+                            <span>Schedule Note</span>
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                        <span id="statusMessage" class="text-sm font-semibold"></span>
+                    </div>
+                </form>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Footer -->
     <footer class="w-full p-6 text-center text-slate-600 text-sm mt-10">
         <p>&copy; 2025 DevOps Portfolio. Built with Flask.</p>
     </footer>
 
+    <!-- Frontend Logic -->
+    <script>
+        document.getElementById('schedulerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = this.querySelector('button');
+            const status = document.getElementById('statusMessage');
+            
+            // UI Loading State
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            status.textContent = 'Scheduling...';
+            status.className = 'text-sm font-semibold text-yellow-500';
+
+            // Get Values
+            const recipient = document.getElementById('recipient').value;
+            const content = document.getElementById('content').value;
+            const rawTime = document.getElementById('triggerTime').value;
+
+            // Simple validation
+            if(!rawTime) {
+                alert("Please select a time");
+                btn.disabled = false;
+                return;
+            }
+
+            // Prepare Payload
+            const payload = {
+                recipient: recipient,
+                content: content,
+                time: rawTime // Browsers usually give YYYY-MM-DDTHH:MM format which ISO 8601 compatible
+            };
+
+            try {
+                const response = await fetch('/api/schedule-note', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    status.textContent = `Success! Scheduled for ${result.time}`;
+                    status.className = 'text-sm font-semibold text-emerald-400';
+                    this.reset(); // Clear form
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                status.textContent = `Error: ${error.message}`;
+                status.className = 'text-sm font-semibold text-red-500';
+            } finally {
+                // Reset UI
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+    </script>
 </body>
 </html>

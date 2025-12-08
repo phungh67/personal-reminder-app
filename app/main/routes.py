@@ -1,6 +1,9 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, current_app, request, jsonify
 from pathlib import Path
 import json
+import os
+
+from app.services.scheduler import NoteScheduler
 
 main = Blueprint('main', __name__)
 
@@ -38,3 +41,41 @@ def index():
     content = get_profile_context('app/main/data.json')
  
     return render_template('index.html', **content)
+
+@main.route('/api/schedule-note', methods=['POST'])
+def schedule_note():
+    """
+    Receives JSON payload from the frontend:
+    {
+        "recipient": "email@example.com",
+        "content": "# Markdown Content",
+        "time": "2025-12-08T10:00"
+    }
+    """
+    data = request.get_json()
+    
+    # 1. Validation
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+        
+    recipient = data.get('recipient')
+    content = data.get('content')
+    trigger_time = data.get('time')
+
+    if not all([recipient, content, trigger_time]):
+        return jsonify({"error": "Missing required fields (recipient, content, time)"}), 400
+
+    # 2. Schedule the Note
+    # We initialize the class to access the DB methods
+    scheduler = NoteScheduler()
+    
+    try:
+        scheduler.schedule_note(recipient, content, trigger_time)
+        return jsonify({
+            "status": "success", 
+            "message": "Note scheduled successfully",
+            "time": trigger_time
+        }), 201
+    except Exception as e:
+        print(f"Scheduler Error: {e}")
+        return jsonify({"error": str(e)}), 500
