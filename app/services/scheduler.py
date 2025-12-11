@@ -82,3 +82,17 @@ class NoteScheduler:
                     print(f"--- Note ID {note['id']} SENT ---")
                 else:
                     print(f"--- Note ID {note['id']} FAILED to send ---")
+    
+    def get_all_notes(self):
+        """Fetches all notes to display in the UI."""
+        try:
+            with sqlite3.connect(DB_PATH) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM notes ORDER BY scheduled_time ASC")
+                rows = cursor.fetchall()
+                # Convert sqlite Rows to list of dicts
+                return [dict(row) for row in rows]
+        except Exception as e:
+            print(f"DB Error: {e}")
+            return []
