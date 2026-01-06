@@ -4,6 +4,7 @@ import json
 import os
 
 from app.services.scheduler import NoteScheduler
+from app.services.blog import BlogService
 
 main = Blueprint('main', __name__)
 
@@ -79,3 +80,18 @@ def schedule_note():
     except Exception as e:
         print(f"Scheduler Error: {e}")
         return jsonify({"error": str(e)}), 500
+    
+@main.route('/api/post', methods=['POST'])
+def publish_post():
+    # pre check
+    if request.headers.get('X-Admin-Token') != os.environ.get('ADMIN_TOKEN'):
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.get_json()
+
+    blog_service = BlogService()
+    post_id = blog_service.create_post(data['title'], data['content'])
+
+    if post_id:
+        return jsonify({"status": "published", "id": post_id}), 201
+    return jsonify({"error": "Database error"}), 500

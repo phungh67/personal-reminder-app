@@ -14,8 +14,8 @@
             }
         ],
         "repos": [
-            {"name": "infrastructure-as-code-lab", "url": "#", "desc": "Terraform and Ansible playground"},
-            {"name": "ci-cd-pipelines", "url": "#", "desc": "Jenkins and GitHub Actions workflows"},
-            {"name": "flask-blueprint-portfolio", "url": "#", "desc": "Source code for this website"}
+            {"name": "infrastructure-as-code-lab", "url": "https://github.com/phungh67/devops-infras", "desc": "Terraform and Ansible playground"},
+            {"name": "devops-journal", "url": "https://github.com/phungh67/devops-journal", "desc": "Ideas, cases and notes from several projects."},
+            {"name": "flask-blueprint-portfolio", "url": "https://github.com/phungh67/personal-reminder-app", "desc": "Source code for this website"}
         ]
     }
